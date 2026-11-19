@@ -77,6 +77,8 @@ data class ProotCommand(val argv: List<String>, val environment: Map<String, Str
                 add("--kill-on-exit")
                 add("--link2symlink")
                 add("-0")
+                // fork: intentar bypass de restricciones de sistema de archivos
+                add("--sysvipc")
                 add("-r"); add(rootfs.path)
                 add("-b"); add("/dev")
                 add("-b"); add("/proc")
