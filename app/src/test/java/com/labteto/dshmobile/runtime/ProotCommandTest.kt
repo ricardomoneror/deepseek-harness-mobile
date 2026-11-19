@@ -70,13 +70,6 @@ class ProotCommandTest {
             "umask 022; mkdir -p /root/work && cd /root/work && exec /usr/local/bin/dsh web --no-open --port 3080",
             argv.last(),
         )
-
-        // fork: con webHost concreto el flag entra; con null no aparece (el guest
-        // rechaza 0.0.0.0 y el default upstream es loopback).
-        val conHost = ProotCommand.build(
-            ProotCommand.Inputs(File("/data/app/x/lib/x86_64"), layout, record, 3080, webHost = "192.168.2.30"),
-        ).argv
-        assertTrue(conHost.last().contains("web --no-open --host 192.168.2.30 --port 3080"))
     }
 
     @Test

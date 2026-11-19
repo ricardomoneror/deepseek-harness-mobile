@@ -466,6 +466,7 @@ class RuntimeEngine(
     }
 
     private fun onExitAfterReady(exitCode: Int, tail: String) {
+        platform.onHarnessStopped()
         _runningSnapshot = null
         val installed = installer.installed()?.toInstalledRuntime()
         // Only a running harness can crash; a stop or an update switch has already moved the state on.

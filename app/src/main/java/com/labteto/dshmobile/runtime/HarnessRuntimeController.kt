@@ -185,12 +185,7 @@ class HarnessRuntimeController @Inject constructor(
             // API 30+: isExternalStorageManager no existe antes; sin ella no hay bind.
             get() = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R &&
                 android.os.Environment.isExternalStorageManager()
-                    .flatMap { it.inetAddresses.asSequence() }
-                    .filterIsInstance<java.net.Inet4Address>()
-                    .firstOrNull { !it.isLoopbackAddress }
-                    ?.hostAddress
-            }.getOrNull()
-        private val lan = LanForwarder { log("lan: " + it) }
+        private val lan = LanForwarder { log.append("---- $it") }
         override fun onHarnessReady(port: Int) {
             val host = LanForwarder.lanAddress() ?: return
             lan.start(host, port)
