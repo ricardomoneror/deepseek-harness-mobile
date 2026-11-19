@@ -185,6 +185,16 @@ class HarnessRuntimeController @Inject constructor(
             // API 30+: isExternalStorageManager no existe antes; sin ella no hay bind.
             get() = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R &&
                 android.os.Environment.isExternalStorageManager()
+        // fork: primera IPv4 no-loopback del dispositivo (Wi-Fi normalmente).
+        override val deviceWebHost: String?
+            get() = runCatching {
+                java.net.NetworkInterface.getNetworkInterfaces().asSequence()
+                    .filter { it.isUp && !it.isLoopback }
+                    .flatMap { it.inetAddresses.asSequence() }
+                    .filterIsInstance<java.net.Inet4Address>()
+                    .firstOrNull { !it.isLoopbackAddress }
+                    ?.hostAddress
+            }.getOrNull()
         override fun guestEnvironment(record: InstalledRecord): Map<String, String> {
             if (!BuildConfig.DEBUG) return emptyMap()
             val extra = mutableMapOf<String, String>()

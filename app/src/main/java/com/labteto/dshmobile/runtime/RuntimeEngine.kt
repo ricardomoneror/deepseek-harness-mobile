@@ -74,6 +74,13 @@ class RuntimeEngine(
          * shared storage. Read once per start; the bind is skipped when false.
          */
         val sharedStorageBind: Boolean get() = false
+
+        /**
+         * fork: this device's LAN IPv4, so the guest's dsh web binds it instead
+         * of loopback. Null keeps the upstream loopback default. The guest refuses
+         * 0.0.0.0 (wildcard RCE guard), so a concrete address is required.
+         */
+        val deviceWebHost: String? get() = null
     }
 
     private val _state = MutableStateFlow(initialState())
@@ -420,6 +427,7 @@ class RuntimeEngine(
                         commandPermission = platform.commandPermission(record),
                         extraEnvironment = platform.guestEnvironment(record),
                         sharedStorageBind = platform.sharedStorageBind,
+                        webHost = platform.deviceWebHost,
                     ),
                 )
                 when (val outcome = supervisor.start(command, layout.root, record.readinessPrefix, port, ::onExitAfterReady)) {

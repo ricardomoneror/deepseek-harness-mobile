@@ -33,6 +33,11 @@ data class ProotCommand(val argv: List<String>, val environment: Map<String, Str
          */
         val sharedStorageBind: Boolean = false,
         /**
+         * fork: LAN IPv4 para el flag --host de dsh web. El guest rechaza
+         * 0.0.0.0 (guardia de RCE wildcard); null deja el loopback upstream.
+         */
+        val webHost: String? = null,
+        /**
          * The preset new sessions start on. Passed as the release's `runtime.permissions.defaultEnv`
          * only when the installed release has that field (see [commandPermissionEnvironment]).
          */
@@ -108,7 +113,7 @@ data class ProotCommand(val argv: List<String>, val environment: Map<String, Str
                 // umask: the app's is 077, which would leave everything the guest writes unreadable
                 // to the guest's own tools. exec keeps the guest's main process one pid, which ends
                 // up being node: that is the process the stop sequence sends SIGTERM to.
-                add("umask 022; mkdir -p $GUEST_WORKDIR && cd $GUEST_WORKDIR && exec ${record.entrypoint} web --no-open --host 0.0.0.0 --port ${inputs.port}")
+                add("umask 022; mkdir -p $GUEST_WORKDIR && cd $GUEST_WORKDIR && exec ${record.entrypoint} web --no-open " + (inputs.webHost?.let { "--host $it " } ?: "") + "--port ${inputs.port}")
             }
             val environment = mapOf(
                 "PROOT_LOADER" to File(inputs.nativeLibraryDir, LOADER).path,
