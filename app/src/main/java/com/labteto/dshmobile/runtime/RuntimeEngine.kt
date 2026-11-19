@@ -75,12 +75,11 @@ class RuntimeEngine(
          */
         val sharedStorageBind: Boolean get() = false
 
-        /**
-         * fork: this device's LAN IPv4, so the guest's dsh web binds it instead
-         * of loopback. Null keeps the upstream loopback default. The guest refuses
-         * 0.0.0.0 (wildcard RCE guard), so a concrete address is required.
-         */
-        val deviceWebHost: String? get() = null
+        /** fork: el harness quedó listo en [port]; el LAN listener se puede abrir. */
+        fun onHarnessReady(port: Int) { }
+
+        /** fork: el harness se detuvo; cerrar el LAN listener. */
+        fun onHarnessStopped() { }
     }
 
     private val _state = MutableStateFlow(initialState())
@@ -184,6 +183,7 @@ class RuntimeEngine(
         job = scope.launch {
             try {
                 starting?.cancelAndJoin()
+                platform.onHarnessStopped()
                 supervisor.stop()
                 op.finish(RuntimeState.Stopped(installer.installed()?.toInstalledRuntime() ?: installed))
             } finally {
@@ -427,7 +427,6 @@ class RuntimeEngine(
                         commandPermission = platform.commandPermission(record),
                         extraEnvironment = platform.guestEnvironment(record),
                         sharedStorageBind = platform.sharedStorageBind,
-                        webHost = platform.deviceWebHost,
                     ),
                 )
                 when (val outcome = supervisor.start(command, layout.root, record.readinessPrefix, port, ::onExitAfterReady)) {
@@ -443,6 +442,7 @@ class RuntimeEngine(
                             rolledBack = rolledBack,
                         )
                         _runningSnapshot = running
+                        platform.onHarnessReady(outcome.port)
                         op.finish(running)
                         return
                     }
