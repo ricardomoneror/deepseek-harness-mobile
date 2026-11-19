@@ -40,7 +40,7 @@ class ProotCommandTest {
     @Test
     fun `the README's proot flags and binds are all there`() {
         val proot = argv.drop(5)
-        assertEquals(listOf("--kill-on-exit", "--link2symlink", "-0", "-r", "/data/user/0/app/no_backup/runtime/base-b1"), proot.take(5))
+        assertEquals(listOf("--kill-on-exit", "--link2symlink", "-0", "--sysvipc", "-r", "/data/user/0/app/no_backup/runtime/base-b1"), proot.take(6))
         for (bind in listOf("/dev", "/proc", "/sys", "/proc/self/fd:/dev/fd", "/data/user/0/app/no_backup/runtime/base-b1/tmp:/dev/shm")) {
             assertTrue("missing -b $bind", argv.windowed(2).any { it == listOf("-b", bind) })
         }
