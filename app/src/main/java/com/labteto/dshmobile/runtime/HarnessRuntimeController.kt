@@ -122,7 +122,7 @@ class HarnessRuntimeController @Inject constructor(
             build = { command ->
                 installedStore.read()?.let { record ->
                     prepareGuestRun()
-                    ProotCommand.buildGuest(system.nativeLibraryDir, layout, record, command)
+                    ProotCommand.buildGuest(system.nativeLibraryDir, layout, record, command, android.os.Environment.isExternalStorageManager())
                 }
             },
             workDir = layout.root,
@@ -177,6 +177,8 @@ class HarnessRuntimeController @Inject constructor(
             _startedWith.value = choice.takeIf { record.permissions != null }
             return choice
         }
+        override val sharedStorageBind: Boolean
+            get() = android.os.Environment.isExternalStorageManager()
         override fun guestEnvironment(record: InstalledRecord): Map<String, String> {
             if (!BuildConfig.DEBUG) return emptyMap()
             val extra = mutableMapOf<String, String>()

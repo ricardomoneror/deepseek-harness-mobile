@@ -27,6 +27,12 @@ data class ProotCommand(val argv: List<String>, val environment: Map<String, Str
          */
         val modulePack: Boolean = true,
         /**
+         * fork: bind the device's shared storage (/storage/emulated/0) into the
+         * guest at the same absolute path. Only true when the OS granted the app
+         * All-files access; skipped otherwise so the start never fails.
+         */
+        val sharedStorageBind: Boolean = false,
+        /**
          * The preset new sessions start on. Passed as the release's `runtime.permissions.defaultEnv`
          * only when the installed release has that field (see [commandPermissionEnvironment]).
          */
@@ -84,6 +90,10 @@ data class ProotCommand(val argv: List<String>, val environment: Map<String, Str
                 add("-b"); add("${File(layout.run, GENERATED_RESOLV).path}:${record.resolvConf}")
                 add("-b"); add("${layout.home.path}:$GUEST_HOME")
                 add("-b"); add("${layout.workspaces.path}:$GUEST_WORKSPACES")
+                // fork: shared storage released into the guest at its device path.
+                if (inputs.sharedStorageBind) {
+                    add("-b"); add("/storage/emulated/0:/storage/emulated/0")
+                }
                 add("-b"); add("${File(harness, "opt/dsh").path}:/opt/dsh")
                 add("-b"); add("${File(harness, "usr/local/bin/dsh").path}:/usr/local/bin/dsh")
                 add("-w"); add(GUEST_HOME)
@@ -98,7 +108,7 @@ data class ProotCommand(val argv: List<String>, val environment: Map<String, Str
                 // umask: the app's is 077, which would leave everything the guest writes unreadable
                 // to the guest's own tools. exec keeps the guest's main process one pid, which ends
                 // up being node: that is the process the stop sequence sends SIGTERM to.
-                add("umask 022; mkdir -p $GUEST_WORKDIR && cd $GUEST_WORKDIR && exec ${record.entrypoint} web --no-open --port ${inputs.port}")
+                add("umask 022; mkdir -p $GUEST_WORKDIR && cd $GUEST_WORKDIR && exec ${record.entrypoint} web --no-open --host 0.0.0.0 --port ${inputs.port}")
             }
             val environment = mapOf(
                 "PROOT_LOADER" to File(inputs.nativeLibraryDir, LOADER).path,
@@ -167,7 +177,7 @@ data class ProotCommand(val argv: List<String>, val environment: Map<String, Str
          * clears everything inherited from Android ([GuestCommandRunner] passes every inherited
          * name in `removeFromEnvironment`) and proot hands the rest to the guest unchanged.
          */
-        fun buildGuest(nativeLibraryDir: File, layout: RuntimeLayout, record: InstalledRecord, command: GuestCommand): ProotCommand {
+        fun buildGuest(nativeLibraryDir: File, layout: RuntimeLayout, record: InstalledRecord, command: GuestCommand, sharedStorageBind: Boolean = false): ProotCommand {
             val rootfs = File(layout.root, record.base.dir)
             val harness = File(layout.root, record.harness.dir)
             val argv = buildList {
@@ -192,6 +202,10 @@ data class ProotCommand(val argv: List<String>, val environment: Map<String, Str
                 add("-b"); add("${File(layout.run, GENERATED_RESOLV).path}:${record.resolvConf}")
                 add("-b"); add("${layout.home.path}:$GUEST_HOME")
                 add("-b"); add("${layout.workspaces.path}:$GUEST_WORKSPACES")
+                // fork: shared storage released into the guest at its device path.
+                if (sharedStorageBind) {
+                    add("-b"); add("/storage/emulated/0:/storage/emulated/0")
+                }
                 add("-b"); add("${File(harness, "opt/dsh").path}:/opt/dsh")
                 add("-w"); add(command.workingDirectory)
                 add("/bin/sh"); add("-c"); add(GUEST_WRAPPER); add("sh")

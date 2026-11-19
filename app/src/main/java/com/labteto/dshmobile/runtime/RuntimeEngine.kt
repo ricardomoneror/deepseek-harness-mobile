@@ -68,6 +68,12 @@ class RuntimeEngine(
          * to make a release on trial fail its start, for the device test of the rollback.
          */
         fun guestEnvironment(record: InstalledRecord): Map<String, String> = emptyMap()
+
+        /**
+         * fork: whether the OS granted All-files access, so the guest may bind
+         * shared storage. Read once per start; the bind is skipped when false.
+         */
+        val sharedStorageBind: Boolean get() = false
     }
 
     private val _state = MutableStateFlow(initialState())
@@ -413,6 +419,7 @@ class RuntimeEngine(
                         modulePack = platform.modulePack,
                         commandPermission = platform.commandPermission(record),
                         extraEnvironment = platform.guestEnvironment(record),
+                        sharedStorageBind = platform.sharedStorageBind,
                     ),
                 )
                 when (val outcome = supervisor.start(command, layout.root, record.readinessPrefix, port, ::onExitAfterReady)) {
