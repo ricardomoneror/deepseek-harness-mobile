@@ -67,7 +67,7 @@ class ProotCommandTest {
         assertTrue(argv.contains("LANG=C.UTF-8"))
         assertTrue(argv.contains("PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/node/bin"))
         assertEquals(
-            "umask 022; mkdir -p /root/work && cd /root/work && exec /usr/local/bin/dsh web --no-open --port 3080",
+            "umask 022; mkdir -p /root/work && cd /root/work && exec /usr/local/bin/dsh web --no-open --host 0.0.0.0 --port 3080",
             argv.last(),
         )
     }
