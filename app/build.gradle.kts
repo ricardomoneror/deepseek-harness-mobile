@@ -34,7 +34,8 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.labteto.dshmobile"
+        // fork: applicationId propio para convivir con la app original (com.labteto.dshmobile)
+        applicationId = "com.ricardo.dshmobile"
         minSdk = 26
         targetSdk = 35
         versionCode = dshVersionCode
