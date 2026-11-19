@@ -78,7 +78,7 @@ class ProjectsViewModel @Inject constructor(
 ) : ViewModel()
 
 /** What a picker or dialog started, so one job dialog can follow it. */
-enum class ProjectStart { EMPTY, CLONE, FOLDER, ZIP }
+enum class ProjectStart { EMPTY, CLONE, FOLDER, ZIP, LINK }
 
 /**
  * The system pickers for "Import a folder" and "Import a .zip", and the dialogs for a new empty
@@ -93,6 +93,10 @@ fun rememberProjectStarters(operations: ProjectOperations, open: Boolean, onStar
     var dialog by rememberSaveable { mutableStateOf<ProjectStart?>(null) }
     val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if (uri != null && operations.importFolder(uri, open)) onStarted()
+    }
+    // fork: el mismo picker, pero enlaza la carpeta en lugar de copiarla.
+    val linkPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri != null && operations.linkFolderInPlace(uri, open)) onStarted()
     }
     val zipPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null && operations.importZip(uri, open)) onStarted()
@@ -113,6 +117,7 @@ fun rememberProjectStarters(operations: ProjectOperations, open: Boolean, onStar
             when (start) {
                 ProjectStart.EMPTY, ProjectStart.CLONE -> dialog = start
                 ProjectStart.FOLDER -> runCatching { folderPicker.launch(null) }
+                ProjectStart.LINK -> runCatching { linkPicker.launch(null) }
                 ProjectStart.ZIP -> runCatching { zipPicker.launch(arrayOf("application/zip", "application/x-zip-compressed", "application/octet-stream")) }
             }
         }

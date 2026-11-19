@@ -248,6 +248,7 @@ internal fun ProjectStartButtons(starters: ProjectStarters) {
         StartRow(stringResource(R.string.projects_new_empty), stringResource(R.string.projects_new_empty_hint)) { starters.request(ProjectStart.EMPTY) }
         StartRow(stringResource(R.string.projects_clone), stringResource(R.string.projects_clone_hint)) { starters.request(ProjectStart.CLONE) }
         StartRow(stringResource(R.string.projects_import_folder), stringResource(R.string.projects_import_folder_hint)) { starters.request(ProjectStart.FOLDER) }
+        StartRow(stringResource(R.string.projects_use_folder), stringResource(R.string.projects_use_folder_hint)) { starters.request(ProjectStart.LINK) }
         StartRow(stringResource(R.string.projects_import_zip), stringResource(R.string.projects_import_zip_hint)) { starters.request(ProjectStart.ZIP) }
     }
 }

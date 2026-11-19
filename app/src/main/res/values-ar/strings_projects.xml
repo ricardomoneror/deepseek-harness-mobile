@@ -115,4 +115,8 @@
     <string name="projects_fail_clone_other">لم يتمكن Git من استنساخ هذا المستودع.</string>
     <string name="projects_fail_git_said">رسالة Git: %1$s</string>
     <string name="projects_session_folder_gone">لم يعد مجلد هذه الجلسة موجودًا، فقد حُذف أو غُيّر اسمه. ابدأ جلسة جديدة في مشروع لتتابع العمل.</string>
+  <string name="projects_use_folder">Use phone folder in place</string>
+  <string name="projects_use_folder_hint">Edit the selected folder directly, without copying it</string>
+  <string name="projects_job_link">Linking %1$s</string>
+  <string name="projects_done_link">Folder %1$s ready to edit in place</string>
 </resources>

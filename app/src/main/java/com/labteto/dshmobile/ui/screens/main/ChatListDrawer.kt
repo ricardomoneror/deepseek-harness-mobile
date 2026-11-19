@@ -1984,6 +1984,11 @@ private fun NewSessionDialog(
                 onClick = { projectStarts.request(com.labteto.dshmobile.ui.screens.runtime.ProjectStart.FOLDER) },
             )
             SheetRow(
+                title = stringResource(R.string.projects_use_folder),
+                subtitle = stringResource(R.string.projects_use_folder_hint),
+                onClick = { projectStarts.request(com.labteto.dshmobile.ui.screens.runtime.ProjectStart.LINK) },
+            )
+            SheetRow(
                 title = stringResource(R.string.projects_import_zip),
                 subtitle = stringResource(R.string.projects_import_zip_hint),
                 onClick = { projectStarts.request(com.labteto.dshmobile.ui.screens.runtime.ProjectStart.ZIP) },

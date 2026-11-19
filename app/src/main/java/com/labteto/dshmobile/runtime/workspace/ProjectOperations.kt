@@ -235,6 +235,39 @@ class ProjectOperations @Inject constructor(
             }
         }
 
+    /**
+     * fork: enlaza el directorio real del dispositivo como proyecto, sin copiarlo.
+     *
+     * [treeUri] viene del selector SAF. El DocumentsProvider de Android expone el
+     * nombre del directorio; con MANAGE_EXTERNAL_STORAGE concedido, el bind de
+     * proot pone /storage/emulated/0 a la misma ruta dentro del guest, asi que
+     * un enlace simbolico deja al harness editar la carpeta original (por ejemplo
+     * la boveda de Obsidian) y el cambio aparece en la app de Obsidian al instante.
+     *
+     * Con SAF puro no podemos saber la ruta absoluta; por eso se usa el nombre
+     * de la carpeta raiz bajo /storage/emulated/0. Si no existe, falla con un
+     * mensaje visible en vez de copiar silenciosamente.
+     */
+    suspend fun linkFolderInPlace(treeUri: Uri, open: Boolean): Boolean = withContext(Dispatchers.IO) {
+        val source = SafSourceTree(context.contentResolver, treeUri)
+        val name = source.rootName()?.trim().orEmpty()
+        if (name.isEmpty() || name.contains("/") || name == "." || name == "..") return@withContext false
+        val real = java.io.File("/storage/emulated/0", name)
+        if (!real.isDirectory) return@withContext false
+        if (!controller.state.value.installedNow()) return@withContext false
+        root.mkdirs()
+        ProjectList.nameProblem(root, fs, name)?.let { return@withContext false }
+        val link = File(root, name)
+        // El guest ve /workspaces/<name>; un symlink al montaje compartido hace que
+        // leer y escribir ahi ocurra sobre la carpeta real del dispositivo.
+        val ok = runCatching { fs.symlink("/storage/emulated/0/" + name, link.path) }.isSuccess
+        if (!ok) return@withContext false
+        WorkspacesProvider.notifyChanged(context)
+        refresh()
+        if (open) openSession(WorkspaceTree.GUEST_ROOT + "/" + name)
+        true
+    }
+
     /** Copy the folder the person picked ([treeUri], from the system picker) into a new project. */
     fun importFolder(treeUri: Uri, open: Boolean): Boolean {
         val source = SafSourceTree(context.contentResolver, treeUri)

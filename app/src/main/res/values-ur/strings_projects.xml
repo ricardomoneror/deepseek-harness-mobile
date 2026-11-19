@@ -111,4 +111,8 @@
     <string name="projects_fail_clone_other">Git اس ریپوزیٹری کو کلون نہیں کر سکا۔</string>
     <string name="projects_fail_git_said">Git کا پیغام: %1$s</string>
     <string name="projects_session_folder_gone">اس سیشن کا فولڈر اب موجود نہیں۔ اسے حذف کیا گیا یا اس کا نام بدلا گیا۔ کام جاری رکھنے کے لیے کسی پروجیکٹ میں نیا سیشن شروع کریں۔</string>
+  <string name="projects_use_folder">Use phone folder in place</string>
+  <string name="projects_use_folder_hint">Edit the selected folder directly, without copying it</string>
+  <string name="projects_job_link">Linking %1$s</string>
+  <string name="projects_done_link">Folder %1$s ready to edit in place</string>
 </resources>
