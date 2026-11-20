@@ -95,8 +95,11 @@ fun rememberProjectStarters(operations: ProjectOperations, open: Boolean, onStar
         if (uri != null && operations.importFolder(uri, open)) onStarted()
     }
     // fork: el mismo picker, pero enlaza la carpeta en lugar de copiarla.
+    val scope = rememberCoroutineScope()
     val linkPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-        if (uri != null && operations.linkFolderInPlace(uri, open)) onStarted()
+        if (uri != null) scope.launch {
+            if (operations.linkFolderInPlace(uri, open)) onStarted()
+        }
     }
     val zipPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null && operations.importZip(uri, open)) onStarted()

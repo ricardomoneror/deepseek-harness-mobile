@@ -260,7 +260,7 @@ class ProjectOperations @Inject constructor(
         val link = File(root, name)
         // El guest ve /workspaces/<name>; un symlink al montaje compartido hace que
         // leer y escribir ahi ocurra sobre la carpeta real del dispositivo.
-        val ok = runCatching { fs.symlink("/storage/emulated/0/" + name, link.path) }.isSuccess
+        val ok = runCatching { fs.symlink("/storage/emulated/0/" + name, link) }.isSuccess
         if (!ok) return@withContext false
         WorkspacesProvider.notifyChanged(context)
         refresh()
