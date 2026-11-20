@@ -248,19 +248,31 @@ class ProjectOperations @Inject constructor(
      * de la carpeta raiz bajo /storage/emulated/0. Si no existe, falla con un
      * mensaje visible en vez de copiar silenciosamente.
      */
+    /**
+     * fork: enlaza el directorio real del dispositivo como proyecto, sin copiarlo.
+     *
+     * El nombre devuelto por SAF (rootName) no es la ruta: un picker de
+     * Almacenamiento interno devuelve "Almacenamiento interno" mientras el
+     * documentId es "primary:0_BOVEDA_TORRE". Se extrae la parte tras ':' que
+     * es la ruta relativa a /storage/emulated/0, que es la ruta que el bind de
+     * proot expone al guest.
+     */
     suspend fun linkFolderInPlace(treeUri: Uri, open: Boolean): Boolean = withContext(Dispatchers.IO) {
-        val source = SafSourceTree(context.contentResolver, treeUri)
-        val name = source.rootName()?.trim().orEmpty()
-        if (name.isEmpty() || name.contains("/") || name == "." || name == "..") return@withContext false
-        val real = java.io.File("/storage/emulated/0", name)
-        if (!real.isDirectory) return@withContext false
+        val docId = runCatching { DocumentsContract.getTreeDocumentId(treeUri) }.getOrNull()
+            ?: run { Log.w(TAG, "link: no se pudo leer el documentId"); return@withContext false }
+        val relative = docId.substringAfter(':', docId)
+            .trim('/')
+            .takeIf { it.isNotBlank() && !it.contains("..") && !it.startsWith("/") }
+            ?: run { Log.w(TAG, "link: docId sin ruta: $docId"); return@withContext false }
+        val real = java.io.File("/storage/emulated/0", relative)
+        if (!real.isDirectory) { Log.w(TAG, "link: no existe ${real.path}"); return@withContext false }
         if (!controller.state.value.installedNow()) return@withContext false
+
+        val name = real.name
         root.mkdirs()
         ProjectList.nameProblem(root, fs, name)?.let { return@withContext false }
-        val link = File(root, name)
-        // El guest ve /workspaces/<name>; un symlink al montaje compartido hace que
-        // leer y escribir ahi ocurra sobre la carpeta real del dispositivo.
-        val ok = runCatching { fs.symlink("/storage/emulated/0/" + name, link) }.isSuccess
+        val link = java.io.File(root, name)
+        val ok = runCatching { fs.symlink(real.path, link) }.isSuccess
         if (!ok) return@withContext false
         WorkspacesProvider.notifyChanged(context)
         refresh()
@@ -444,7 +456,7 @@ class ProjectOperations @Inject constructor(
                     ProjectJob.Failed(kind, name, JobFailure.Transfer(e.problem))
                 } catch (e: IOException) {
                     Log.w(TAG, "${kind.name} failed: ${e.javaClass.simpleName}")
-                    ProjectJob.Failed(kind, name, if (e.isNoSpace()) JobFailure.Transfer(TransferProblem.NO_SPACE) else JobFailure.Other(e.javaClass.simpleName))
+                    ProjectJob.Failed(kind, name, if (e.isNoSpace()) JobFailure.Transfer(TransferProblem.NO_SPACE) else JobFailure.Other(e.message?.take(120) ?: e.javaClass.simpleName))
                 } catch (e: SecurityException) {
                     ProjectJob.Failed(kind, name, JobFailure.Transfer(TransferProblem.NOT_READABLE))
                 } catch (e: IllegalArgumentException) {
